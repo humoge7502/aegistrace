@@ -1,0 +1,344 @@
+{
+  "benchmark": "AegisTrace AttackBench v0",
+  "note": "All fixtures are harmless local simulations; detection = run not trusted (integrity event fired / certificate rejected / output invalidated).",
+  "scenarios": [
+    {
+      "id": "model-tampering",
+      "category": "model tampering",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for bench-model@1"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "prompt-tampering",
+      "category": "prompt tampering",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "prompt_mismatch",
+          "severity": "critical",
+          "title": "Prompt hash mismatch (system)"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "dataset-poisoning",
+      "category": "dataset poisoning",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for kb://bench"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "dependency-substitution",
+      "category": "dependency substitution",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for pypi:requests"
+        },
+        {
+          "kind": "path_deviation",
+          "severity": "high",
+          "title": "Execution path deviated from baseline sequence"
+        },
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Component not in expected path: pypi:requests"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "container-modification",
+      "category": "container modification",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for container:agent"
+        },
+        {
+          "kind": "path_deviation",
+          "severity": "high",
+          "title": "Execution path deviated from baseline sequence"
+        },
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Component not in expected path: container:agent"
+        }
+      ],
+      "extras": {
+        "note": "container digest differs from pinned image digest"
+      }
+    },
+    {
+      "id": "rag-poisoning",
+      "category": "RAG poisoning",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Unexpected retrieval component: kb://attacker-index"
+        },
+        {
+          "kind": "path_deviation",
+          "severity": "high",
+          "title": "Execution path deviated from baseline sequence"
+        },
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Component not in expected path: kb://attacker-index"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "tool-compromise",
+      "category": "tool compromise",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for tool:send_email"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "mcp-compromise",
+      "category": "MCP compromise",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for mcp://bench-crm"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "runtime-manipulation",
+      "category": "runtime manipulation",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "path_deviation",
+          "severity": "high",
+          "title": "Execution path deviated from baseline sequence"
+        },
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Component not in expected path: runtime:python-3.13"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "path-deviation",
+      "category": "execution-path deviation",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Unexpected mcp component: mcp://external-endpoint"
+        },
+        {
+          "kind": "path_deviation",
+          "severity": "high",
+          "title": "Execution path deviated from baseline sequence"
+        },
+        {
+          "kind": "unexpected_component",
+          "severity": "critical",
+          "title": "Component not in expected path: mcp://external-endpoint"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "multi-component",
+      "category": "combined compromise",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNTRUSTED",
+      "integrity_events": [
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for mcp://bench-crm"
+        },
+        {
+          "kind": "digest_mismatch",
+          "severity": "critical",
+          "title": "Digest mismatch for tool:send_email"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "id": "forged-attestation",
+      "category": "forged attestation",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "TRUSTED",
+      "integrity_events": [],
+      "extras": {
+        "forged_signature_valid": false
+      }
+    },
+    {
+      "id": "stale-trust",
+      "category": "stale/missing trust evidence",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "UNKNOWN",
+      "integrity_events": [
+        {
+          "kind": "missing_provenance",
+          "severity": "medium",
+          "title": "Execution finished with no provenance steps"
+        },
+        {
+          "kind": "missing_step",
+          "severity": "medium",
+          "title": "Expected step missing: bench-model@1"
+        },
+        {
+          "kind": "missing_step",
+          "severity": "medium",
+          "title": "Expected step missing: kb://bench"
+        },
+        {
+          "kind": "missing_step",
+          "severity": "medium",
+          "title": "Expected step missing: mcp://bench-crm"
+        },
+        {
+          "kind": "missing_step",
+          "severity": "medium",
+          "title": "Expected step missing: tool:send_email"
+        }
+      ],
+      "extras": {
+        "note": "missing provenance yields UNKNOWN, never TRUSTED"
+      }
+    },
+    {
+      "id": "historical-dependency-compromise",
+      "category": "historical dependency compromise",
+      "is_attack": true,
+      "expected_detection": true,
+      "detected": true,
+      "trust_state": "post-hoc",
+      "integrity_events": [],
+      "extras": {
+        "affected_executions": 1,
+        "outputs_invalidated": 1,
+        "certificates_revoked": [
+          "ATC-27166c1c28d2e449"
+        ]
+      }
+    },
+    {
+      "id": "benign-exact",
+      "category": "benign control (exact expected run)",
+      "is_attack": false,
+      "expected_detection": false,
+      "detected": false,
+      "trust_state": "TRUSTED",
+      "integrity_events": [],
+      "extras": {}
+    },
+    {
+      "id": "benign-meta-variation",
+      "category": "benign control (metadata variation)",
+      "is_attack": false,
+      "expected_detection": false,
+      "detected": false,
+      "trust_state": "TRUSTED",
+      "integrity_events": [],
+      "extras": {}
+    },
+    {
+      "id": "benign-recovery-flow",
+      "category": "benign control (compromise->recover->re-certify)",
+      "is_attack": false,
+      "expected_detection": false,
+      "detected": false,
+      "trust_state": "RE-CERTIFIED",
+      "integrity_events": [],
+      "extras": {
+        "intermediate_attack_detected": true,
+        "recertified": true
+      }
+    }
+  ],
+  "metrics": {
+    "attacks": 14,
+    "true_positives": 14,
+    "false_negatives": 0,
+    "benign_controls": 3,
+    "false_positives": 0,
+    "true_negatives": 3,
+    "precision": 1.0,
+    "recall": 1.0,
+    "accuracy": 1.0
+  }
+}

@@ -74,7 +74,12 @@ def decide_execution(
 ) -> TrustState:
     """Map deviations -> trust state per policy; update outputs; maybe certify."""
     rules = effective_rules(policy_rules)
-    if deviations:
+    severity_name: str | None = None
+    if not (execution.steps or []):
+        # no evidence at all: collector down / events lost -> UNKNOWN, never DEGRADED
+        new_state = TrustState.UNKNOWN
+        reason = "No provenance steps recorded (missing evidence)"
+    elif deviations:
         worst = max((severity_rank(d["severity"]) for d in deviations))
         severity_name = [s.value for s in Severity][worst]
         new_state = TrustState(rules.get(severity_name, TrustState.DEGRADED.value))
@@ -87,6 +92,7 @@ def decide_execution(
         reason = "All baseline checks passed (digests, path, allow-lists)"
 
     evidence = {
+        "severity_worst": severity_name,
         "integrity_event_ids": [str(i) for i in integrity_event_ids],
         "deviations": deviations,
         "baseline_id": str(baseline.id) if baseline else None,
