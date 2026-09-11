@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from backend.app.api.deps import get_auth, get_db, require_role, tenant_uuid
 from backend.app.certs import service as cert_service
 from backend.app.collect.schemas import (
+    ApiKeyCreateIn,
     BaselineIn,
     EventBatchIn,
     IncidentActionIn,
@@ -527,21 +528,17 @@ def update_policy(ident: str, rules: dict, request: Request, db: Session = Depen
 
 
 @router.post("/auth/keys", tags=["auth"])
-def create_api_key(name: str, role: str, request: Request, db: Session = Depends(get_db), auth: dict = Depends(get_auth)):
+def create_api_key(body: ApiKeyCreateIn, request: Request, db: Session = Depends(get_db), auth: dict = Depends(get_auth)):
     require_role(auth, minimum=Role.ADMIN)
-    try:
-        role_enum = Role(role)
-    except ValueError:
-        raise HTTPException(status_code=422, detail=f"invalid role {role}")
     raw = generate_api_key()
     row = models.ApiKey(
-        tenant_id=auth["tenant_id"], name=name, key_hash=hash_api_key(raw),
-        prefix=key_prefix(raw), role=role_enum,
+        tenant_id=auth["tenant_id"], name=body.name, key_hash=hash_api_key(raw),
+        prefix=key_prefix(raw), role=Role(body.role),
     )
     db.add(row)
     db.flush()
-    _audit(db, auth, request, "auth.key.create", "api_key", str(row.id), {"name": name, "role": role})
-    return {"id": str(row.id), "key": raw, "prefix": row.prefix, "role": role,
+    _audit(db, auth, request, "auth.key.create", "api_key", str(row.id), {"name": body.name, "role": body.role})
+    return {"id": str(row.id), "key": raw, "prefix": row.prefix, "role": body.role,
             "note": "store this key now; it is not retrievable later"}
 
 

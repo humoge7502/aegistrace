@@ -61,7 +61,7 @@ def process_event(session: Session, tenant_id: uuid.UUID, event: EventIn,
         session.flush()
         return result
     if kind == EventKind.EXECUTION_FINISHED:
-        result = _on_execution_finished(session, tenant_id, payload, signing_key, key_id, tenant_name)
+        result = _on_execution_finished(session, tenant_id, event, payload, signing_key, key_id, tenant_name)
         session.flush()
         return result
     session.flush()
@@ -173,11 +173,11 @@ def _on_prompt(session: Session, tenant_id: uuid.UUID, event: EventIn, payload: 
     return {"pinned": role}
 
 
-def _on_execution_finished(session: Session, tenant_id: uuid.UUID, payload: dict,
+def _on_execution_finished(session: Session, tenant_id: uuid.UUID, event: EventIn, payload: dict,
                            signing_key, key_id: str, tenant_name: str) -> dict:
-    external_id = payload.get("execution_external_id")
+    external_id = event.execution_external_id or payload.get("execution_external_id")
     if not external_id:
-        raise ValueError("execution.finished requires execution_external_id in payload")
+        raise ValueError("execution.finished requires execution_external_id (envelope or payload)")
     ex = graph.get_execution_by_external(session, tenant_id, external_id)
     if ex is None:
         raise ValueError(f"unknown execution {external_id}")

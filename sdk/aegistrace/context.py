@@ -44,15 +44,17 @@ def get_client() -> CollectorClient:
 
 class RunContext:
     def __init__(self, agent_ref: str | None = None, agent_version: str | None = None,
-                 run_id: str | None = None) -> None:
+                 run_id: str | None = None, rerun_of: str | None = None) -> None:
         self.run_id = run_id or uuid.uuid4().hex[:16]
         self.agent_ref = agent_ref or _agent_ref
         self.agent_version = agent_version or _agent_version
         self._seq = itertools.count(1)
         self.finished = False
         self._client = get_client()
-        self.emit("execution.started", {"agent_ref": self.agent_ref,
-                                        "agent_version": self.agent_version})
+        started: dict = {"agent_ref": self.agent_ref, "agent_version": self.agent_version}
+        if rerun_of:
+            started["rerun_of"] = rerun_of
+        self.emit("execution.started", started)
 
     @property
     def client(self) -> CollectorClient:
@@ -115,8 +117,9 @@ class RunContext:
 
 
 def start_run(agent_ref: str | None = None, agent_version: str | None = None,
-              run_id: str | None = None) -> RunContext:
-    ctx = RunContext(agent_ref=agent_ref, agent_version=agent_version, run_id=run_id)
+              run_id: str | None = None, rerun_of: str | None = None) -> RunContext:
+    ctx = RunContext(agent_ref=agent_ref, agent_version=agent_version,
+                     run_id=run_id, rerun_of=rerun_of)
     _current.set(ctx)
     return ctx
 

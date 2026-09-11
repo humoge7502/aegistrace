@@ -49,3 +49,8 @@ class IncidentActionIn(BaseModel):
     action: str = Field(pattern=r"^(contain|recover|resolve|rerun_note)$")
     reason: str = ""
     new_digest: str | None = None
+
+
+class ApiKeyCreateIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    role: str = Field(pattern=r"^(admin|operator|agent|viewer)$")
