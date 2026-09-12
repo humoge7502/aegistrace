@@ -5,9 +5,11 @@ it after completing a meaningful task._
 
 ## Current phase
 
-P0 core implementation (provenance → expected/observed → deviation → trust propagation →
-output trust determination → certificates → killer demo), then P1, then frontend polish,
-benchmarks, and final audit.
+First major milestone COMPLETE (P0+P1 core, SDK, killer demo, AttackBench,
+frontend console, deployment files, docs). Final adversarial audit executed:
+2 HIGH + 10 MED findings fixed and regression-tested; 9 LOW tracked in
+docs/agent-state/AUDIT-FINDINGS.md. All gates green: 48 tests, AttackBench
+P/R 1.0, ruff clean, alembic drift 0, UI judge-passed 9/9.
 
 ## Architecture snapshot
 

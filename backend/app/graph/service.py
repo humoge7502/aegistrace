@@ -205,10 +205,11 @@ def compare_baseline(baseline_doc: dict, mode: str, execution: models.Execution)
         return deviations
 
     # 2. component allow-lists (allowed_set and sequence modes)
+    # an empty allow-list means DENY-ALL for that kind; a missing key means unconstrained
     for s in steps:
         kind, target = s.get("kind", ""), s.get("target", "")
-        allowed_targets = allowed.get(f"{kind}s") or allowed.get(kind) or []
-        if allowed_targets and target not in allowed_targets:
+        allowed_targets = allowed.get(f"{kind}s", allowed.get(kind))
+        if allowed_targets is not None and target not in allowed_targets:
             deviations.append({
                 "kind": IntegrityKind.UNEXPECTED_COMPONENT.value,
                 "severity": Severity.CRITICAL.value,
@@ -216,6 +217,32 @@ def compare_baseline(baseline_doc: dict, mode: str, execution: models.Execution)
                 "expected": {"allowed": allowed_targets},
                 "observed": {"kind": kind, "target": target},
             })
+
+    # 2b. pinned digests must actually be observed (evidence-withholding runs
+    # must not pass silently)
+    for s in steps:
+        exp_digest = component_digests.get(s.get("target", ""))
+        if exp_digest and not s.get("digest"):
+            deviations.append({
+                "kind": IntegrityKind.DIGEST_MISMATCH.value,
+                "severity": Severity.HIGH.value,
+                "title": f"Expected digest not attested for {s.get('target')}",
+                "expected": {"target": s.get("target"), "digest": exp_digest},
+                "observed": {"target": s.get("target"), "digest": None},
+            })
+
+    # 2c. expected steps must be observed in allowed_set mode too
+    if mode == FingerprintMode.ALLOWED_SET.value and expected_steps:
+        obs_pairs = {(s.get("kind"), s.get("target")) for s in steps}
+        for e in expected_steps:
+            if (e.get("kind"), e.get("target")) not in obs_pairs:
+                deviations.append({
+                    "kind": IntegrityKind.MISSING_STEP.value,
+                    "severity": Severity.MEDIUM.value,
+                    "title": f"Expected step missing: {e.get('target')}",
+                    "expected": {"kind": e.get("kind"), "target": e.get("target")},
+                    "observed": None,
+                })
 
     # 3. path comparison
     if mode == FingerprintMode.SEQUENCE.value:
@@ -250,13 +277,22 @@ def compare_baseline(baseline_doc: dict, mode: str, execution: models.Execution)
                     "observed": None,
                 })
 
-    # 4. prompt pinning
+    # 4. prompt pinning (an expected-but-never-pinned prompt is a deviation:
+    # withheld evidence must not pass silently)
     prompt_hashes: dict[str, str] = baseline_doc.get("prompt_hashes", {})
     if prompt_hashes:
         observed_prompts = (execution.meta or {}).get("prompt_hashes", {})
         for role, digest in prompt_hashes.items():
             obs = observed_prompts.get(role)
-            if obs and obs != digest:
+            if obs is None:
+                deviations.append({
+                    "kind": IntegrityKind.PROMPT_MISMATCH.value,
+                    "severity": Severity.CRITICAL.value,
+                    "title": f"Expected prompt never pinned ({role})",
+                    "expected": {"role": role, "hash": digest},
+                    "observed": {"role": role, "pinned": False},
+                })
+            elif obs != digest:
                 deviations.append({
                     "kind": IntegrityKind.PROMPT_MISMATCH.value,
                     "severity": Severity.CRITICAL.value,

@@ -41,6 +41,10 @@ def looks_like_secret(value: str) -> bool:
     return any(p.search(value) for p in _SECRET_PATTERNS)
 
 
+def hash_content_value(value: str) -> str:
+    return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def redact_strings(obj: object) -> object:
     """Replace secret-looking strings with a marker (used on metadata, not content)."""
     if isinstance(obj, str):
@@ -76,6 +80,8 @@ class TokenBucket:
 
 
 class RateLimiter:
+    MAX_BUCKETS = 10_000  # unauthenticated key strings must not grow memory unbounded
+
     def __init__(self, per_minute: int) -> None:
         self.per_minute = per_minute
         self._buckets: dict[str, TokenBucket] = {}
@@ -85,6 +91,8 @@ class RateLimiter:
         with self._lock:
             bucket = self._buckets.get(subject)
             if bucket is None:
+                if len(self._buckets) >= self.MAX_BUCKETS:
+                    self._buckets.clear()  # crude but bounded; honest DoS tradeoff
                 bucket = TokenBucket(self.per_minute)
                 self._buckets[subject] = bucket
         return bucket.allow()

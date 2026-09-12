@@ -114,11 +114,22 @@ def create_app() -> FastAPI:
             with app.state.session_factory() as db:
                 db.execute(text("SELECT 1"))
             return JSONResponse({"status": "ready"})
-        except Exception as e:  # pragma: no cover
-            return JSONResponse({"status": "not-ready", "error": str(e)}, status_code=503)
+        except Exception:  # pragma: no cover - never leak internals to anonymous callers
+            return JSONResponse({"status": "not-ready"}, status_code=503)
 
     @app.get("/metrics", include_in_schema=False)
-    async def metrics() -> PlainTextResponse:
+    async def metrics(request: Request) -> PlainTextResponse:
+        api_key = request.headers.get("X-API-Key", "")
+        if not api_key:
+            return PlainTextResponse("unauthorized", status_code=401)
+        with app.state.session_factory() as db:
+            from backend.app.core.security import hash_api_key
+            from sqlalchemy import select as _select
+            row = db.execute(
+                _select(models.ApiKey).where(models.ApiKey.key_hash == hash_api_key(api_key))
+            ).scalar_one_or_none()
+        if row is None or row.role != models.Role.ADMIN:
+            return PlainTextResponse("forbidden", status_code=403)
         return PlainTextResponse(app.state.metrics.render())
 
     return app

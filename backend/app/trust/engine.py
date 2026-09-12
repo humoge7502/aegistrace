@@ -103,10 +103,19 @@ def decide_execution(
                          ("critical", "high", "medium", "low", "no_baseline")},
     }
 
-    # a re-run after recovery that passes all checks is RE-CERTIFIED
-    if new_state == TrustState.TRUSTED and (execution.meta or {}).get("rerun_of"):
-        new_state = TrustState.RE_CERTIFIED
-        reason = "Re-run after recovery passed all baseline checks (re-certification)"
+    # a re-run after recovery that passes all checks is RE-CERTIFIED; the
+    # agent-reported rerun_of target must exist in this tenant (validated)
+    rerun_of = (execution.meta or {}).get("rerun_of")
+    if new_state == TrustState.TRUSTED and rerun_of:
+        target = session.execute(
+            select(models.Execution).where(
+                models.Execution.tenant_id == tenant_id,
+                models.Execution.external_id == rerun_of,
+            )
+        ).scalar_one_or_none()
+        if target is not None:
+            new_state = TrustState.RE_CERTIFIED
+            reason = f"Re-run of {rerun_of} passed all baseline checks (re-certification)"
 
     execution.trust_state = new_state
     _decision(session, tenant_id, NodeKind.EXECUTION, execution.id, new_state, reason, evidence)
@@ -169,7 +178,8 @@ def compromise_component(
     Returns an explainable summary: affected executions/outputs/certificates with
     the evidence chain for each.
     """
-    rules = effective_rules(None)
+    policy = get_default_policy(session, tenant_id)
+    rules = effective_rules(policy.rules)
     component.trust_state = TrustState.COMPROMISED
     component.state_reason = reason
     component.state_updated_at = models.utcnow()
@@ -188,7 +198,10 @@ def compromise_component(
     session.flush()
 
     propagation_scope = rules.get("compromised_propagation", "all_history")
-    since = compromised_since if propagation_scope == "from_compromise_time" else None
+    if propagation_scope == "from_compromise_time":
+        since = compromised_since or models.utcnow()
+    else:
+        since = None
     executions = _executions_using_component(session, tenant_id, component.id, since=since)
 
     affected_executions: list[dict] = []

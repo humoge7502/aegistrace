@@ -20,10 +20,10 @@ IDs: AT-###. Status: todo | doing | done | blocked. Evidence is required for `do
 | AT-040 | Killer demo (definitive experiment, reproducible) | Runtime | AT-016 | done | demo/killer_demo.py |
 | AT-041 | AttackBench: 14 attack scenarios + metrics | Red team | AT-012,AT-013 | done | benchmarks/attackbench |
 | AT-042 | Baseline comparison (SBOM-only, attestation-only, provenance-only) | Benchmark | AT-041 | done | benchmarks/baseline_comparison.py |
-| AT-050 | Frontend: landing, login, overview, executions, graph, incidents, certificates, AttackBench | Frontend | AT-016 | doing | frontend/ |
+| AT-050 | Frontend: landing, login, overview, executions, graph, incidents, certificates, AttackBench | Frontend | AT-016 | done | frontend/ + docs/ui-screens (judge 9/9) |
 | AT-060 | Docker/compose + CI workflow | DevOps | AT-016 | done | deploy/ (run verified locally where daemon allows) |
-| AT-070 | Research docs integration + FINAL-REPORT.md | Research | AT-002, all | doing | docs/FINAL-REPORT.md |
-| AT-080 | Final audit (arch/security/QA/UX/red-team self-critique) | All | AT-070 | todo | audit notes in docs/agent-state/ |
+| AT-070 | Research docs integration + FINAL-REPORT.md | Research | AT-002, all | done | docs/FINAL-REPORT.md |
+| AT-080 | Final audit (arch/security/QA/UX/red-team self-critique) | All | AT-070 | done | docs/agent-state/AUDIT-FINDINGS.md (21 findings; HIGH+MED fixed) |
 
 ## Open questions / blockers
 

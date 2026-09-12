@@ -139,10 +139,13 @@ class Baseline(Base):
 
 class Execution(Base):
     __tablename__ = "executions"
+    __table_args__ = (
+        Index("ix_executions_tenant_external", "tenant_id", "external_id", unique=True),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=new_id)
     tenant_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tenants.id"), index=True)
-    external_id: Mapped[str] = mapped_column(String(80), unique=True, index=True)  # SDK-provided run id
+    external_id: Mapped[str] = mapped_column(String(80), index=True)  # SDK-provided run id
     baseline_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("baselines.id"), nullable=True)
     agent_ref: Mapped[str] = mapped_column(String(240), index=True)
     agent_version: Mapped[str | None] = mapped_column(String(120), nullable=True)
@@ -158,11 +161,14 @@ class Execution(Base):
 
 class Output(Base):
     __tablename__ = "outputs"
+    __table_args__ = (
+        Index("ix_outputs_tenant_external", "tenant_id", "external_id", unique=True),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=new_id)
     tenant_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tenants.id"), index=True)
     execution_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("executions.id"), index=True)
-    external_id: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    external_id: Mapped[str] = mapped_column(String(80), index=True)
     kind: Mapped[str] = mapped_column(String(60), default="text")
     digest: Mapped[str] = mapped_column(String(80))  # sha256 of output content
     trust_state: Mapped[TrustState] = mapped_column(Enum(TrustState, native_enum=False), default=TrustState.UNKNOWN)

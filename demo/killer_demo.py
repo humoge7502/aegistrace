@@ -67,19 +67,25 @@ def main() -> None:
     get_settings.cache_clear()
 
     external = os.environ.get("AEGISTRACE_DEMO_EXTERNAL") == "1"
+    admin_key = os.environ.get("AEGISTRACE_BOOTSTRAP_KEY")
     server = None
     if external:
+        if not admin_key:
+            raise SystemExit("AEGISTRACE_DEMO_EXTERNAL=1 requires AEGISTRACE_BOOTSTRAP_KEY to be set")
         print(f"using externally started server at {BASE}")
     else:
+        import secrets
+        admin_key = "at_demo_" + secrets.token_hex(16)
+        os.environ["AEGISTRACE_BOOTSTRAP_KEY"] = admin_key  # shown once below
         from backend.app.main import create_app
         app = create_app()
         config = uvicorn.Config(app, host=HOST, port=PORT, log_level="warning")
         server = uvicorn.Server(config)
         threading.Thread(target=server.run, daemon=True).start()
 
-    admin_key = "at_demo_bootstrap_key_do_not_use_in_prod"
     with httpx.Client(timeout=10) as c:
         wait_ready(c)
+        print(f"demo admin key (this run only): {admin_key}")
         agent_key = c.post(f"{BASE}/api/v1/auth/keys", headers={"X-API-Key": admin_key},
                            json={"name": "demo-agent", "role": "agent"}).json()["key"]
 
@@ -107,7 +113,7 @@ def main() -> None:
         aegistrace.init(endpoint=BASE, api_key=agent_key,
                         agent_ref="support-agent", agent_version="1.0.0")
 
-        @at_tools.tool("tool:send_email")
+        @at_tools.tool("tool:send_email", digest=D_TOOL)
         def send_email(to: str, body: str) -> str:
             return f"email sent to {to}"
 

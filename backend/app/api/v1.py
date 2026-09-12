@@ -155,6 +155,8 @@ def ingest_events(
 ):
     require_role(auth, allowed=INGEST_ROLES)
     from backend.app.collect.ingest import process_event
+    tenant_row = db.get(models.Tenant, tenant_uuid(auth))
+    tenant_name = tenant_row.name if tenant_row else "unknown"
     results = []
     for idx, event in enumerate(batch.events):
         try:
@@ -162,11 +164,13 @@ def ingest_events(
                 db, tenant_uuid(auth), event,
                 signing_key=request.app.state.signing_key,
                 key_id=request.app.state.key_id,
-                tenant_name=request.app.state.tenant_names.get(auth["tenant_id"], "unknown"),
+                tenant_name=tenant_name,
             ))
         except ValueError as e:
             raise HTTPException(status_code=422, detail=f"event[{idx}]: {e}")
     request.app.state.metrics.bump("events_ingested", len(batch.events))
+    _audit(db, auth, request, "events.ingest", "event_batch", f"{len(batch.events)}",
+           {"kinds": [e.kind for e in batch.events]})
     return {"accepted": len(results), "results": results}
 
 
@@ -212,7 +216,7 @@ def list_executions(
 ):
     require_role(auth, allowed=READ_ROLES)
     q = select(models.Execution).where(models.Execution.tenant_id == tenant_uuid(auth)) \
-        .order_by(models.Execution.started_at.desc()).offset(offset).limit(min(limit, 200))
+        .order_by(models.Execution.started_at.desc()).offset(max(0, offset)).limit(max(0, min(limit, 200)))
     rows = db.execute(q).scalars().all()
     return [execution_dict(e, include_steps=False) for e in rows]
 
@@ -400,9 +404,10 @@ def change_component_trust(
                                          new_digest=body.new_digest, actor=auth["key_name"])
         _audit(db, auth, request, "component.recovered", "component", str(comp.id), {"reason": body.reason})
         return result
-    comp.trust_state = state
-    comp.state_reason = body.reason
-    return {"component_id": str(comp.id), "state": state.value}
+    raise HTTPException(
+        status_code=422,
+        detail="only COMPROMISED and TRUSTED may be set directly; other states are engine-managed",
+    )
 
 
 # --- integrity events / incidents ---------------------------------------------------------
@@ -413,7 +418,7 @@ def list_integrity_events(limit: int = 100, db: Session = Depends(get_db), auth:
     require_role(auth, allowed=READ_ROLES)
     rows = db.execute(
         select(models.IntegrityEvent).where(models.IntegrityEvent.tenant_id == tenant_uuid(auth))
-        .order_by(models.IntegrityEvent.created_at.desc()).limit(min(limit, 500))
+        .order_by(models.IntegrityEvent.created_at.desc()).limit(max(0, min(limit, 500)))
     ).scalars().all()
     return [integrity_event_dict(e) for e in rows]
 
@@ -509,6 +514,31 @@ def list_policies(db: Session = Depends(get_db), auth: dict = Depends(get_auth))
             for p in rows]
 
 
+VALID_POLICY_RULES: dict[str, set[str] | type] = {
+    "critical": {"UNTRUSTED", "DEGRADED", "UNKNOWN"},
+    "high": {"UNTRUSTED", "DEGRADED", "UNKNOWN"},
+    "medium": {"UNTRUSTED", "DEGRADED", "UNKNOWN"},
+    "low": {"UNTRUSTED", "DEGRADED", "UNKNOWN"},
+    "no_baseline": {"UNKNOWN", "DEGRADED", "UNTRUSTED"},
+    "quarantine_outputs": bool,
+    "certify_trusted": bool,
+    "compromised_propagation": {"all_history", "from_compromise_time"},
+}
+
+
+def _validate_policy_rules(rules: dict) -> None:
+    for key, value in rules.items():
+        if key not in VALID_POLICY_RULES:
+            raise HTTPException(status_code=422, detail=f"unknown policy rule: {key}")
+        allowed = VALID_POLICY_RULES[key]
+        if allowed is bool:
+            if not isinstance(value, bool):
+                raise HTTPException(status_code=422, detail=f"{key} must be a boolean")
+        elif value not in allowed:
+            raise HTTPException(status_code=422,
+                                detail=f"{key} must be one of {sorted(allowed)}")
+
+
 @router.put("/policies/{ident}", tags=["policies"])
 def update_policy(ident: str, rules: dict, request: Request, db: Session = Depends(get_db), auth: dict = Depends(get_auth)):
     require_role(auth, minimum=Role.ADMIN)
@@ -518,6 +548,7 @@ def update_policy(ident: str, rules: dict, request: Request, db: Session = Depen
         raise HTTPException(status_code=400, detail="invalid policy id")
     if pol is None or pol.tenant_id != tenant_uuid(auth):
         raise HTTPException(status_code=404, detail="policy not found")
+    _validate_policy_rules(rules)
     pol.rules = rules
     _audit(db, auth, request, "policy.update", "policy", str(pol.id), {"rules": rules})
     return {"id": str(pol.id), "name": pol.name, "rules": pol.rules}
@@ -591,7 +622,7 @@ def list_audit(limit: int = 100, db: Session = Depends(get_db), auth: dict = Dep
     require_role(auth, minimum=Role.ADMIN)
     rows = db.execute(
         select(models.AuditLog).where(models.AuditLog.tenant_id == tenant_uuid(auth))
-        .order_by(models.AuditLog.created_at.desc()).limit(min(limit, 500))
+        .order_by(models.AuditLog.created_at.desc()).limit(max(0, min(limit, 500)))
     ).scalars().all()
     return [{"id": str(a.id), "actor": a.actor, "action": a.action, "object_kind": a.object_kind,
              "object_id": a.object_id, "detail": a.detail, "created_at": _iso(a.created_at)}

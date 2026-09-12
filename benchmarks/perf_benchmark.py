@@ -153,7 +153,7 @@ def run(n_executions: int = 200) -> dict:
         "note": "Single-machine SQLite numbers; PostgreSQL deployment and HTTP overhead "
                 "are expected to differ. Reproducible: python benchmarks/perf_benchmark.py",
     }
-    out = _P(__file__).resolve().parents[2] / "docs" / "benchmarks" / "perf-results.json"
+    out = _P(__file__).resolve().parents[1] / "docs" / "benchmarks" / "perf-results.json"
     out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     return result
 

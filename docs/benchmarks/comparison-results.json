@@ -1,0 +1,431 @@
+{
+  "comparison": "AegisTrace baseline comparison v0",
+  "methodology": "(important for honesty):\nEach baseline strategy is modeled as a detector SUBSET of the same pipeline,\nholding collection constant. This measures the value of each *verification\ncapability* on identical fixtures; it does not re-implement third-party\nproducts. Strategy definitions:\n\n- sbom_only        : component inventory + allow-list only. Knows WHICH\n                     components are allowed; never verifies digests, never\n                     constrains order, no historical propagation.\n- attestation_only : verifies component digests (build-attestation style) at\n                     execution time; no allow-lists, no path constraints, no\n                     behavioral checks, no historical propagation.\n- provenance_only  : records the full causal graph but has no expected-state\n                     baseline \u2014 nothing counts as a deviation at runtime; can\n                     answer \"what influenced this output\" only.\n- aegistrace       : full pipeline (digests + allow-lists + sequence +\n                     behavioral path + certificates + historical propagation).",
+  "rows": [
+    {
+      "scenario": "model-tampering",
+      "category": "model tampering",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "prompt-tampering",
+      "category": "prompt tampering",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "dataset-poisoning",
+      "category": "dataset poisoning",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "dependency-substitution",
+      "category": "dependency substitution",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": true,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "container-modification",
+      "category": "container modification",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": true,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "rag-poisoning",
+      "category": "RAG poisoning",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": true,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "tool-compromise",
+      "category": "tool compromise",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "mcp-compromise",
+      "category": "MCP compromise",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "runtime-manipulation",
+      "category": "runtime manipulation",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": true,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "path-deviation",
+      "category": "execution-path deviation",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": true,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "multi-component",
+      "category": "combined compromise",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "forged-attestation",
+      "category": "forged attestation",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "stale-trust",
+      "category": "stale/missing trust evidence",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": true,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "historical-dependency-compromise",
+      "category": "historical dependency compromise",
+      "is_attack": true,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": true
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": true
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": true
+        },
+        "aegistrace": {
+          "detected": true,
+          "expected": true
+        }
+      }
+    },
+    {
+      "scenario": "benign-exact",
+      "category": "benign control (exact expected run)",
+      "is_attack": false,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": false
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": false
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": false
+        },
+        "aegistrace": {
+          "detected": false,
+          "expected": false
+        }
+      }
+    },
+    {
+      "scenario": "benign-meta-variation",
+      "category": "benign control (metadata variation)",
+      "is_attack": false,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": false
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": false
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": false
+        },
+        "aegistrace": {
+          "detected": false,
+          "expected": false
+        }
+      }
+    },
+    {
+      "scenario": "benign-recovery-flow",
+      "category": "benign control (compromise->recover->re-certify)",
+      "is_attack": false,
+      "strategies": {
+        "sbom_only": {
+          "detected": false,
+          "expected": false
+        },
+        "attestation_only": {
+          "detected": false,
+          "expected": false
+        },
+        "provenance_only": {
+          "detected": false,
+          "expected": false
+        },
+        "aegistrace": {
+          "detected": false,
+          "expected": false
+        }
+      }
+    }
+  ],
+  "summary": {
+    "sbom_only": {
+      "true_positives": 5,
+      "false_negatives": 9,
+      "false_positives": 0,
+      "true_negatives": 3,
+      "recall": 0.36,
+      "precision": 1.0
+    },
+    "attestation_only": {
+      "true_positives": 9,
+      "false_negatives": 5,
+      "false_positives": 0,
+      "true_negatives": 3,
+      "recall": 0.64,
+      "precision": 1.0
+    },
+    "provenance_only": {
+      "true_positives": 0,
+      "false_negatives": 14,
+      "false_positives": 0,
+      "true_negatives": 3,
+      "recall": 0.0,
+      "precision": null
+    },
+    "aegistrace": {
+      "true_positives": 14,
+      "false_negatives": 0,
+      "false_positives": 0,
+      "true_negatives": 3,
+      "recall": 1.0,
+      "precision": 1.0
+    }
+  }
+}

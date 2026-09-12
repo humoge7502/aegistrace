@@ -274,6 +274,11 @@
           "kind": "missing_step",
           "severity": "medium",
           "title": "Expected step missing: tool:send_email"
+        },
+        {
+          "kind": "prompt_mismatch",
+          "severity": "critical",
+          "title": "Expected prompt never pinned (system)"
         }
       ],
       "extras": {
@@ -292,7 +297,7 @@
         "affected_executions": 1,
         "outputs_invalidated": 1,
         "certificates_revoked": [
-          "ATC-27166c1c28d2e449"
+          "ATC-4380f1dd26aa2302"
         ]
       }
     },

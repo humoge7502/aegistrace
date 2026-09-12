@@ -95,6 +95,22 @@ def issue_certificate(
     return cert
 
 
+def verify_statement(statement: dict, signature_b64: str, public_pem: bytes,
+                     status: str = "ACTIVE", execution_fingerprint: str | None = None) -> VerificationResult:
+    """Stateless verification core: signature + (optional) status + subject match.
+    Used by the API endpoint and by AttackBench's forgery fixture."""
+    if not verify_bytes(public_pem, canonical_json(statement), signature_b64):
+        return VerificationResult(False, "signature verification FAILED (forged or tampered)", None)
+    if status != "ACTIVE":
+        return VerificationResult(False, f"certificate status {status}", None)
+    subject_digest = (statement["subject"][0]["digest"].get("sha256") or "").removeprefix("sha256:")
+    if execution_fingerprint is not None:
+        fp = execution_fingerprint.removeprefix("sha256:")
+        if not subject_digest or subject_digest != fp:
+            return VerificationResult(False, "subject digest no longer matches execution fingerprint", None)
+    return VerificationResult(True, "signature valid, certificate active, subject matches", None)
+
+
 def verify_certificate(session: Session, tenant_id: uuid.UUID, serial: str,
                        public_pem: bytes) -> VerificationResult:
     cert = session.execute(
@@ -104,17 +120,15 @@ def verify_certificate(session: Session, tenant_id: uuid.UUID, serial: str,
     if cert is None:
         return VerificationResult(False, "certificate not found", None)
 
-    if not verify_bytes(public_pem, canonical_json(cert.statement), cert.signature):
-        return VerificationResult(False, "signature verification FAILED (forged or tampered)", cert)
-
-    if cert.status == CertStatus.REVOKED:
-        return VerificationResult(False, f"certificate REVOKED: {cert.revoked_reason}", cert)
-
     execution = session.get(models.Execution, cert.execution_id)
     if execution is None:
         return VerificationResult(False, "referenced execution missing", cert)
-    if execution.fingerprint != cert.statement["subject"][0]["digest"].get("sha256") and \
-            ("sha256:" + cert.statement["subject"][0]["digest"].get("sha256", "")) != execution.fingerprint:
-        return VerificationResult(False, "subject digest no longer matches execution fingerprint", cert)
-
-    return VerificationResult(True, "signature valid, certificate active, subject matches", cert)
+    result = verify_statement(
+        cert.statement, cert.signature, public_pem,
+        status=cert.status.value,
+        execution_fingerprint=execution.fingerprint,
+    )
+    if not result.valid and cert.status == CertStatus.REVOKED:
+        return VerificationResult(False, f"certificate REVOKED: {cert.revoked_reason}", cert)
+    result.certificate = cert
+    return result

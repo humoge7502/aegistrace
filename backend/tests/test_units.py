@@ -80,7 +80,7 @@ def test_clean_execution_has_no_deviations():
         {"seq": 2, "kind": "retrieval", "target": "kb://policies"},
         {"seq": 3, "kind": "mcp", "target": "mcp://crm", "digest": "sha256:" + "2" * 64},
     ]
-    ex = make_execution(steps)
+    ex = make_execution(steps, meta={"prompt_hashes": {"system": "sha256:" + "a" * 64}})
     assert compare_baseline(BASE, "sequence", ex) == []
 
 
@@ -97,10 +97,18 @@ def test_allowed_set_mode_permutes():
     steps = [
         {"seq": 1, "kind": "mcp", "target": "mcp://crm", "digest": "sha256:" + "2" * 64},
         {"seq": 2, "kind": "model", "target": "demo-model@1"},
+        {"seq": 3, "kind": "retrieval", "target": "kb://policies"},
     ]
+    ex = make_execution(steps, meta={"prompt_hashes": {"system": "sha256:" + "a" * 64}})
+    devs = compare_baseline(BASE, "allowed_set", ex)
+    assert devs == []  # same component set, different order: allowed
+
+
+def test_allowed_set_mode_flags_missing_expected_step():
+    steps = [{"seq": 1, "kind": "mcp", "target": "mcp://crm", "digest": "sha256:" + "2" * 64}]
     ex = make_execution(steps)
     devs = compare_baseline(BASE, "allowed_set", ex)
-    assert devs == []  # same components, different order: allowed
+    assert any(d["kind"] == "missing_step" for d in devs)
 
 
 def test_redaction():

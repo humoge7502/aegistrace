@@ -22,16 +22,43 @@ from backend.app.domain.enums import (
 )
 from backend.app.certs import service as cert_service
 from backend.app.collect.schemas import EventIn
-from backend.app.core.security import redact_strings
+from backend.app.core.config import get_settings
+from backend.app.core.security import CONTENT_KEYS, hash_content_value, redact_strings
 from backend.app.domain import models
 from backend.app.graph import service as graph
 from backend.app.trust import engine as trust
 
 
+def sanitize_payload(payload: dict, allow_content: bool) -> dict:
+    """Defense in depth (ADR-005): secret-pattern strings are always redacted;
+    raw content under CONTENT_KEYS is hashed unless the operator has explicitly
+    enabled AEGISTRACE_ALLOW_CONTENT. Already-hashed values pass through."""
+    def clean(node):
+        if isinstance(node, str):
+            return node if node.startswith("sha256:") else hash_content_value(node)
+        if isinstance(node, dict):
+            return {k: clean(v) for k, v in node.items()}
+        if isinstance(node, list):
+            return [clean(v) for v in node]
+        return node
+
+    def walk(node):
+        if isinstance(node, dict):
+            return {k: clean(v) if k in CONTENT_KEYS else walk(v) for k, v in node.items()}
+        if isinstance(node, list):
+            return [walk(v) for v in node]
+        return node
+
+    out = redact_strings(payload)
+    if allow_content:
+        return out
+    return walk(out)
+
+
 def process_event(session: Session, tenant_id: uuid.UUID, event: EventIn,
                   signing_key, key_id: str, tenant_name: str) -> dict:
     """Apply one event; returns a small acknowledgement dict."""
-    payload = redact_strings(event.payload or {})
+    payload = sanitize_payload(event.payload or {}, get_settings().allow_content)
     kind = EventKind(event.kind)
 
     session.add(models.RawEvent(
@@ -125,10 +152,12 @@ def _on_execution_started(session: Session, tenant_id: uuid.UUID, event: EventIn
 
 
 def _on_step(session: Session, tenant_id: uuid.UUID, event: EventIn, payload: dict, ended: bool) -> dict:
+    # only step.ended contributes to the observed path; step.started is stored
+    # in the raw log only (prevents double-recording and premature accounting)
+    _require_execution(session, tenant_id, event)
+    if not ended:
+        return {"recorded": False, "reason": "step.started kept in raw log only; send step.ended to record"}
     ex = _require_execution(session, tenant_id, event)
-    if not ended and any(s.get("target") == payload.get("target") and s.get("kind") == payload.get("kind")
-                         for s in ex.steps):
-        return {"recorded": False, "reason": "step.started without step.ended is not recorded"}
     graph.record_step(session, tenant_id, ex, payload)
     return {"recorded": True, "steps": len(ex.steps)}
 
@@ -181,6 +210,9 @@ def _on_execution_finished(session: Session, tenant_id: uuid.UUID, event: EventI
     ex = graph.get_execution_by_external(session, tenant_id, external_id)
     if ex is None:
         raise ValueError(f"unknown execution {external_id}")
+    if ex.finished_at is not None:
+        return {"execution_id": str(ex.id), "trust_state": ex.trust_state.value,
+                "deviations": 0, "certificate": None, "deduplicated": True}
     if payload.get("status") == "failed":
         ex.status = ExecutionStatus.FAILED
 

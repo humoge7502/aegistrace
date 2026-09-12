@@ -194,6 +194,8 @@ def test_recovery_and_recertification(client, provisioned, demo_baseline):
     result = emit(client, provisioned["agent_key"], [
         {"kind": "execution.started", "execution_external_id": "run-rec-2",
          "payload": {"agent_ref": "support-agent", "rerun_of": "run-rec"}},
+        {"kind": "prompt.pinned", "execution_external_id": "run-rec-2",
+         "payload": {"role": "system", "hash": "sha256:" + "a" * 64}},
         {"kind": "step.ended", "execution_external_id": "run-rec-2",
          "payload": {"seq": 1, "kind": "model", "target": "demo-model@1",
                      "digest": "sha256:" + "1" * 64}},

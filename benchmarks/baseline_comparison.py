@@ -138,7 +138,7 @@ def write_markdown(report: dict, path: _P) -> None:
 
 
 if __name__ == "__main__":
-    out_dir = _P(__file__).resolve().parents[2] / "docs" / "benchmarks"
+    out_dir = _P(__file__).resolve().parents[1] / "docs" / "benchmarks"
     out_dir.mkdir(parents=True, exist_ok=True)
     report = run()
     (out_dir / "comparison-results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

@@ -1,0 +1,26 @@
+{
+  "benchmark": "AegisBench performance v0",
+  "environment": {
+    "platform": "win32",
+    "database": "sqlite (local file)",
+    "mode": "in-process engine (no HTTP)"
+  },
+  "workload": {
+    "executions": 200,
+    "events_per_execution": 8,
+    "total_events": 1600
+  },
+  "results": {
+    "ingest_events_per_second": 92.1,
+    "ingest_wall_seconds": 17.38,
+    "execution_avg_ms": 86.56,
+    "execution_p95_ms": 117.67,
+    "compromise_propagation_ms": 709.62,
+    "propagation_affected_executions": 200,
+    "propagation_invalidated_outputs": 200,
+    "propagation_revoked_certificates": 200,
+    "impact_query_ms": 262.04,
+    "db_size_mb": 3.26
+  },
+  "note": "Single-machine SQLite numbers; PostgreSQL deployment and HTTP overhead are expected to differ. Reproducible: python benchmarks/perf_benchmark.py"
+}
