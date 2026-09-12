@@ -29,7 +29,7 @@ from backend.app.collect.schemas import EventIn
 from backend.app.core.crypto import canonical_json, load_or_create_key, verify_with_key
 from backend.app.core.db import make_engine, make_session_factory
 from backend.app.domain import models
-from backend.app.domain.enums import FingerprintMode, IntegrityKind, Severity, TrustState
+from backend.app.domain.enums import FingerprintMode, TrustState
 from backend.app.graph import service as graph
 from backend.app.trust import engine as trust
 

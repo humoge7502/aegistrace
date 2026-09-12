@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* ================================================================
+   AegisTrace "Ledger" design system (docs/design/aegistrace-design-system.md)
+   Dark-first enterprise theme. Borders carry elevation; shadows subtle.
+   ================================================================ */
+
+@theme {
+  /* surfaces */
+  --color-canvas: #0b0e14;
+  --color-surface: #11151f;
+  --color-surface-2: #161b27;
+  --color-hairline: #1e2532;
+
+  /* ink */
+  --color-ink: #e6eaf2;
+  --color-ink-dim: #9aa3b5;
+  --color-ink-faint: #5b6474;
+
+  /* accent — reserved for interactivity, never for trust states */
+  --color-accent: #22d3ee;
+  --color-accent-strong: #67e8f9;
+
+  /* trust states (dark-theme text-safe values) */
+  --color-trust: #4ade80;
+  --color-untrust: #f87171;
+  --color-unknown: #94a3b8;
+  --color-degraded: #fbbf24;
+  --color-compromised: #fda4af;
+  --color-quarantined: #fb923c;
+  --color-recovering: #60a5fa;
+  --color-recertified: #2dd4bf;
+
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --radius-card: 10px;
+}
+
+/* The console is dark-first by design (security-product convention);
+   light-theme tokens are defined in the design system for a future toggle. */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* blueprint dot-grid canvas for graph areas */
+.dotgrid {
+  background-image: radial-gradient(var(--color-hairline) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* mono is the "evidence voice" of the product */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+}
+
+/* micro-labels */
+.microlabel {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  font-weight: 600;
+}
+
+/* focus rings (a11y) */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* deviation edge marching ants (static under reduced motion above) */
+@keyframes marching-ants {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+.dev-edge {
+  animation: marching-ants 1.2s linear infinite;
+}
+
+/* trust-state pulse for the provenance rail */
+@keyframes state-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.state-pulse {
+  animation: state-pulse 2.4s ease-in-out infinite;
+}

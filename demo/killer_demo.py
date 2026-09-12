@@ -23,7 +23,6 @@ import sys
 import tempfile
 import threading
 import time
-import uuid
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -67,11 +66,16 @@ def main() -> None:
     from backend.app.core.config import get_settings
     get_settings.cache_clear()
 
-    from backend.app.main import create_app
-    app = create_app()
-    config = uvicorn.Config(app, host=HOST, port=PORT, log_level="warning")
-    server = uvicorn.Server(config)
-    threading.Thread(target=server.run, daemon=True).start()
+    external = os.environ.get("AEGISTRACE_DEMO_EXTERNAL") == "1"
+    server = None
+    if external:
+        print(f"using externally started server at {BASE}")
+    else:
+        from backend.app.main import create_app
+        app = create_app()
+        config = uvicorn.Config(app, host=HOST, port=PORT, log_level="warning")
+        server = uvicorn.Server(config)
+        threading.Thread(target=server.run, daemon=True).start()
 
     admin_key = "at_demo_bootstrap_key_do_not_use_in_prod"
     with httpx.Client(timeout=10) as c:
@@ -98,8 +102,6 @@ def main() -> None:
 
         # --- instrument the SDK against the real server ----------------------
         import aegistrace
-        from aegistrace.integrations import mcp as at_mcp
-        from aegistrace.integrations import rag as at_rag
         from aegistrace.integrations import tools as at_tools
 
         aegistrace.init(endpoint=BASE, api_key=agent_key,
@@ -223,7 +225,7 @@ def main() -> None:
                      json={"state": "TRUSTED", "new_digest": D_MCP_TRUSTED,
                            "reason": "MCP fixture restored to trusted build; digest verified"}).json()
         print(f"  component recovered: {rec['state']}")
-        out5 = run_support_agent("Where is my refund?", D_MCP_TRUSTED, run_id="demo-run-5",
+        out5 = run_support_agent("Where is my refund?", D_MCP_TRUSTED, run_id="demo-run-4",
                                  rerun_of="demo-run-1")
         res5 = last_result(c, admin_key)
         print(json.dumps(res5, indent=2))
@@ -249,8 +251,9 @@ def main() -> None:
         report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"\n  machine-readable report: {report_path}")
 
-    server.should_exit = True
-    time.sleep(1)
+    if server is not None:
+        server.should_exit = True
+        time.sleep(1)
 
 
 def _hash(s: str) -> str:

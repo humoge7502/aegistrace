@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,17 +20,15 @@ from backend.app.collect.schemas import (
 from backend.app.core.security import generate_api_key, hash_api_key, key_prefix
 from backend.app.domain import models
 from backend.app.domain.enums import (
-    CertStatus,
     EdgeKind,
     FingerprintMode,
     IncidentStatus,
     NodeKind,
-    PolicyAction,
     Role,
-    Severity,
     TrustState,
 )
 from backend.app.graph import service as graph
+from backend.app.policy.engine import effective_rules
 from backend.app.trust import engine as trust
 
 router = APIRouter(prefix="/api/v1")
@@ -506,7 +504,8 @@ def list_policies(db: Session = Depends(get_db), auth: dict = Depends(get_auth))
     rows = db.execute(
         select(models.Policy).where(models.Policy.tenant_id == tenant_uuid(auth))
     ).scalars().all()
-    return [{"id": str(p.id), "name": p.name, "rules": p.rules, "is_default": p.is_default}
+    return [{"id": str(p.id), "name": p.name, "rules": p.rules,
+             "effective_rules": effective_rules(p.rules), "is_default": p.is_default}
             for p in rows]
 
 

@@ -56,7 +56,9 @@ def get_default_policy(session: Session, tenant_id: uuid.UUID) -> models.Policy:
                                     models.Policy.is_default.is_(True))
     ).scalars().first()
     if pol is None:
-        pol = models.Policy(tenant_id=tenant_id, name="default", rules={}, is_default=True)
+        from backend.app.policy.engine import DEFAULT_RULES
+        pol = models.Policy(tenant_id=tenant_id, name="default",
+                            rules=dict(DEFAULT_RULES), is_default=True)
         session.add(pol)
         session.flush()
     return pol

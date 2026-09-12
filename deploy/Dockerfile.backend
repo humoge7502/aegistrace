@@ -1,0 +1,21 @@
+# syntax=docker/dockerfile:1
+# AegisTrace backend — reproducible build
+FROM python:3.13-slim AS base
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+
+COPY backend/pyproject.toml backend/README* ./backend/
+COPY sdk/pyproject.toml ./sdk/
+RUN pip install --no-cache-dir -e ./backend
+
+COPY backend ./backend
+COPY sdk ./sdk
+RUN pip install --no-cache-dir -e ./sdk
+
+RUN useradd -r -u 10001 aegis && mkdir -p /data /keys && chown -R aegis /app /data /keys
+USER aegis
+ENV AEGISTRACE_DATABASE_URL=sqlite:////data/aegistrace.db \
+    AEGISTRACE_SIGNING_KEY_PATH=/keys/at_ed25519.pem
+EXPOSE 8420
+HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8420/healthz')"
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8420"]

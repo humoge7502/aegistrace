@@ -1,0 +1,48 @@
+name: aegistrace
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aegistrace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: aegistrace
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegistrace"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    environment:
+      AEGISTRACE_DATABASE_URL: postgresql+psycopg://aegistrace:${POSTGRES_PASSWORD}@postgres:5432/aegistrace
+      AEGISTRACE_SIGNING_KEY_PATH: /keys/at_ed25519.pem
+      AEGISTRACE_BOOTSTRAP_KEY: ${AEGISTRACE_BOOTSTRAP_KEY:?set AEGISTRACE_BOOTSTRAP_KEY}
+      AEGISTRACE_CORS_ORIGINS: '["http://localhost:3000"]'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8420:8420"
+    volumes:
+      - keys:/keys
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../deploy/Dockerfile.frontend
+    environment:
+      AEGISTRACE_API_URL: http://backend:8420
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  keys:

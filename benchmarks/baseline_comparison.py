@@ -30,8 +30,6 @@ from pathlib import Path as _P
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
 from benchmarks.attackbench.run_attackbench import (  # noqa: E402
-    SCENARIOS,
-    ScenarioResult,
     run_attackbench,
 )
 
@@ -108,7 +106,7 @@ def run() -> dict:
     }
 
 
-def write_markdown(report: dict, path: Path) -> None:
+def write_markdown(report: dict, path: _P) -> None:
     lines = [
         "# Baseline Comparison — empirical results",
         "",

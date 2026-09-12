@@ -30,7 +30,6 @@ from backend.app.core.crypto import load_or_create_key  # noqa: E402
 from backend.app.core.db import make_engine, make_session_factory  # noqa: E402
 from backend.app.domain import models  # noqa: E402
 from backend.app.domain.enums import FingerprintMode  # noqa: E402
-from backend.app.graph import service as graph  # noqa: E402
 from backend.app.trust import engine as trust  # noqa: E402
 
 

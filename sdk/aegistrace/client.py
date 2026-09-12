@@ -12,7 +12,6 @@ from typing import Callable
 
 import httpx
 
-from aegistrace.redaction import hash_content
 
 
 class CollectorClient:
