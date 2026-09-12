@@ -5,7 +5,8 @@ it after completing a meaningful task._
 
 ## Current phase
 
-First major milestone COMPLETE (P0+P1 core, SDK, killer demo, AttackBench,
+Frontend v2 ("Ledger v2" editorial redesign) COMPLETE — judge-reviewed 17/17 pages,
+zero mobile overflow, all functional flows regression-tested. First major milestone COMPLETE (P0+P1 core, SDK, killer demo, AttackBench,
 frontend console, deployment files, docs). Final adversarial audit executed:
 2 HIGH + 10 MED findings fixed and regression-tested; 9 LOW tracked in
 docs/agent-state/AUDIT-FINDINGS.md. All gates green: 48 tests, AttackBench

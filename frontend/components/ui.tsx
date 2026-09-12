@@ -31,7 +31,7 @@ export function Card({ title, action, children, className }: {
   title?: string; action?: React.ReactNode; children: React.ReactNode; className?: string;
 }) {
   return (
-    <section className={`rounded-[10px] border border-hairline bg-surface ${className ?? ""}`}>
+    <section className={`min-w-0 rounded-[10px] border border-hairline bg-surface ${className ?? ""}`}>
       {title ? (
         <header className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
           <h2 className="microlabel">{title}</h2>
@@ -48,9 +48,9 @@ export function StatTile({ label, value, state, hint }: {
 }) {
   const color = state ? `text-[var(--color-${stateToCss(state)})]` : "text-ink";
   return (
-    <div className="rounded-[10px] border border-hairline bg-surface px-4 py-3">
+    <div className="min-w-0 rounded-[10px] border border-hairline bg-surface px-4 py-3">
       <div className="microlabel">{label}</div>
-      <div className={`mt-1 font-mono text-2xl font-semibold ${color}`}>{value}</div>
+      <div className={`mono mt-1 text-2xl font-semibold tnum ${color}`}>{value}</div>
       {hint ? <div className="mt-0.5 text-xs text-ink-faint">{hint}</div> : null}
     </div>
   );

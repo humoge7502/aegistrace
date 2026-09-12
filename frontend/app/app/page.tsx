@@ -57,14 +57,14 @@ export default async function OverviewPage() {
                 const count = data.executions_by_trust_state[state];
                 const pct = data.executions_total ? Math.round((count / data.executions_total) * 100) : 0;
                 return (
-                  <div key={state} className="flex items-center gap-3">
-                    <div className="w-32"><TrustBadge state={state} small /></div>
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
+                  <div key={state} className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="min-w-0"><TrustBadge state={state} small /></div>
+                    <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-2">
                       <div className="h-full rounded-full bg-current opacity-60"
                         style={{ width: `${pct}%`, color: "inherit" }}
                       />
                     </div>
-                    <span className="mono w-12 text-right text-xs text-ink-dim">{count}</span>
+                    <span className="mono w-10 text-left text-xs text-ink-dim tnum sm:text-right">{count}</span>
                   </div>
                 );
               })
@@ -80,7 +80,7 @@ export default async function OverviewPage() {
               Object.entries(data.components_by_trust_state)
                 .sort((a, b) => b[1] - a[1])
                 .map(([state, count]) => (
-                  <span key={state} className="flex items-center gap-2 rounded-lg border border-hairline bg-surface-2 px-3 py-2">
+                  <span key={state} className="flex min-w-0 items-center gap-2 rounded-lg border border-hairline bg-surface-2 px-3 py-2">
                     <TrustBadge state={state} small />
                     <span className="mono text-sm">{count}</span>
                   </span>

@@ -80,8 +80,18 @@ export default async function ExecutionDetailPage({ params }: { params: Promise<
                 </div>
                 <div className="mt-0.5 font-medium">{e.title}</div>
                 <div className="mt-1 grid gap-2 text-xs text-ink-dim sm:grid-cols-2">
-                  {e.expected ? <pre className="mono overflow-x-auto whitespace-pre-wrap break-all rounded border border-hairline bg-canvas p-2">{JSON.stringify(e.expected)}</pre> : null}
-                  {e.observed ? <pre className="mono overflow-x-auto whitespace-pre-wrap break-all rounded border border-hairline bg-canvas p-2">{JSON.stringify(e.observed)}</pre> : null}
+                  {e.expected ? (
+                    <div className="min-w-0">
+                      <div className="microlabel mb-1">expected</div>
+                      <pre className="mono overflow-x-auto whitespace-pre-wrap break-all rounded border border-hairline bg-canvas p-2">{JSON.stringify(e.expected)}</pre>
+                    </div>
+                  ) : null}
+                  {e.observed ? (
+                    <div className="min-w-0">
+                      <div className="microlabel mb-1">observed</div>
+                      <pre className="mono overflow-x-auto whitespace-pre-wrap break-all rounded border border-hairline bg-canvas p-2">{JSON.stringify(e.observed)}</pre>
+                    </div>
+                  ) : null}
                 </div>
               </li>
             ))}

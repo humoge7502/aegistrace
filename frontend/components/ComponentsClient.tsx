@@ -70,7 +70,7 @@ export default function ComponentsClient({ rows }: { rows: ComponentRow[] }) {
 
   return (
     <div className="grid gap-4 xl:grid-cols-3">
-      <div className="xl:col-span-2">
+      <div className="min-w-0 xl:col-span-2">
         <Card title={`${local.length} components`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -78,7 +78,7 @@ export default function ComponentsClient({ rows }: { rows: ComponentRow[] }) {
                 <tr className="border-b border-hairline text-left">
                   <th className="microlabel px-3 py-2">Component</th>
                   <th className="microlabel px-3 py-2">Kind</th>
-                  <th className="microlabel px-3 py-2">Digest (exp / obs)</th>
+                  <th className="microlabel px-3 py-2">Digest</th>
                   <th className="microlabel px-3 py-2">State</th>
                   <th className="microlabel px-3 py-2 text-right">Actions</th>
                 </tr>
@@ -91,8 +91,13 @@ export default function ComponentsClient({ rows }: { rows: ComponentRow[] }) {
                       {r.version ? <div className="text-[10px] text-ink-faint">v{r.version}</div> : null}
                     </td>
                     <td className="px-3 py-2.5 text-xs text-ink-dim">{r.kind}</td>
-                    <td className="mono px-3 py-2.5 text-[10px] text-ink-faint">
-                      {shortDigest(r.digest_expected)} / {shortDigest(r.digest_observed)}
+                    <td className="mono px-3 py-2.5 text-[11px] text-ink-faint">
+                      <span className="block whitespace-nowrap" title={`expected ${r.digest_expected ?? "—"}`}>
+                        exp {shortDigest(r.digest_expected)}
+                      </span>
+                      <span className="block whitespace-nowrap" title={`observed ${r.digest_observed ?? "—"}`}>
+                        obs {shortDigest(r.digest_observed)}
+                      </span>
                     </td>
                     <td className="px-3 py-2.5"><TrustBadge state={r.trust_state} small /></td>
                     <td className="px-3 py-2.5 text-right">
@@ -135,7 +140,7 @@ export default function ComponentsClient({ rows }: { rows: ComponentRow[] }) {
         </Card>
       </div>
 
-      <div>
+      <div className="min-w-0">
         <Card title="Dependency impact (live)">
           {impact ? (
             <div className="space-y-3">

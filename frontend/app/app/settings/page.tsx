@@ -57,7 +57,7 @@ export default async function SettingsPage() {
           <SettingsClient />
         </Card>
 
-        <Card title="Audit trail (admin)">
+        <Card title="Audit trail (admin)" className="lg:col-span-2">
           {auditError ? (
             <p className="text-sm text-ink-faint">{auditError} (admin role required)</p>
           ) : audit.length === 0 ? (

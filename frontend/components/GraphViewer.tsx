@@ -68,7 +68,7 @@ export default function GraphViewer({ nodes, edges }: { nodes: GraphNode[]; edge
   function nodeShape(node: GraphNode, pos: { x: number; y: number }) {
     const color = stateColor(node.trust_state);
     const fill = `${color}22`;
-    const stroke = node.deviation ? "#f87171" : color;
+    const stroke = node.deviation ? "var(--color-untrust)" : color;
     const cx = pos.x + NODE_W / 2;
     const cy = pos.y + NODE_H / 2;
     const s = shapeFor(node);
@@ -138,7 +138,7 @@ export default function GraphViewer({ nodes, edges }: { nodes: GraphNode[]; edge
               const x2 = e.src.startsWith("component:") ? b.x + NODE_W / 2 : b.x;
               const y2 = b.y + NODE_H / 2;
               const mx = (x1 + x2) / 2;
-              const color = e.expected ? "#4ade80" : "#f87171";
+              const color = e.expected ? "var(--color-trust)" : "var(--color-untrust)";
               return (
                 <g key={i}>
                   <path
@@ -151,7 +151,7 @@ export default function GraphViewer({ nodes, edges }: { nodes: GraphNode[]; edge
                     className={e.expected ? undefined : "dev-edge"}
                   />
                   {e.seq != null && e.kind === "step" ? (
-                    <text x={mx} y={(y1 + y2) / 2 - 5} textAnchor="middle" fill="#5b6474" fontSize={9} fontFamily="monospace">
+                    <text x={mx} y={(y1 + y2) / 2 - 5} textAnchor="middle" fill="var(--color-ink-faint)" fontSize={9} fontFamily="monospace">
                       {e.seq}
                     </text>
                   ) : null}
@@ -173,14 +173,14 @@ export default function GraphViewer({ nodes, edges }: { nodes: GraphNode[]; edge
                   className="cursor-pointer"
                 >
                   {nodeShape(n, pos)}
-                  <text x={pos.x + NODE_W / 2} y={pos.y + 19} textAnchor="middle" fill="#e6eaf2" fontSize={11} fontWeight={600}>
+                  <text x={pos.x + NODE_W / 2} y={pos.y + 19} textAnchor="middle" fill="var(--color-ink)" fontSize={11} fontWeight={600}>
                     {truncate(n.label, 16)}
                   </text>
                   <text x={pos.x + NODE_W / 2} y={pos.y + 34} textAnchor="middle" fill={stateColor(n.trust_state)} fontSize={9} fontFamily="monospace">
                     {n.trust_state}
                   </text>
                   {n.deviation ? (
-                    <circle cx={pos.x + 6} cy={pos.y + 4} r={5} fill="#f87171">
+                    <circle cx={pos.x + 6} cy={pos.y + 4} r={5} fill="var(--color-untrust)">
                       <animate attributeName="opacity" values="1;0.4;1" dur="1.6s" repeatCount="indefinite" />
                     </circle>
                   ) : null}

@@ -80,7 +80,15 @@ export default async function AttackBenchPage() {
                         : <span className="text-trust">correctly passed</span>
                     )}
                   </td>
-                  <td className="mono px-3 py-2 text-xs uppercase text-ink-dim">{s.trust_state}</td>
+                  <td className="mono px-3 py-2 text-xs uppercase text-ink-dim">
+                    {s.trust_state}
+                    {s.id === "forged-attestation" ? (
+                      <div className="normal-case text-[10px] text-ink-faint">forged certificate rejected by verification</div>
+                    ) : null}
+                    {s.id === "historical-dependency-compromise" ? (
+                      <div className="normal-case text-[10px] text-ink-faint">output invalidated + certificate revoked post-hoc</div>
+                    ) : null}
+                  </td>
                 </tr>
               ))}
             </tbody>

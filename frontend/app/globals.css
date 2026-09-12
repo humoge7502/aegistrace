@@ -1,27 +1,33 @@
 @import "tailwindcss";
 
 /* ================================================================
-   AegisTrace "Ledger" design system (docs/design/aegistrace-design-system.md)
-   Dark-first enterprise theme. Borders carry elevation; shadows subtle.
+   AegisTrace "Ledger v2" design system
+   docs/design/aegistrace-design-system.md
+   Dark-first forensic-ledger identity with a fully-designed paper
+   (light) theme. Borders carry elevation; mono is the evidence voice;
+   motion is tokenized and always subordinate to meaning.
    ================================================================ */
 
 @theme {
-  /* surfaces */
+  /* ----- surfaces (dark = default) ----- */
   --color-canvas: #0b0e14;
+  --color-canvas-2: #080a10;
   --color-surface: #11151f;
   --color-surface-2: #161b27;
   --color-hairline: #1e2532;
+  --color-hairline-strong: #2a3342;
 
-  /* ink */
+  /* ----- ink ----- */
   --color-ink: #e6eaf2;
   --color-ink-dim: #9aa3b5;
   --color-ink-faint: #5b6474;
 
-  /* accent — reserved for interactivity, never for trust states */
+  /* ----- accent: interactivity only, never trust states ----- */
   --color-accent: #22d3ee;
   --color-accent-strong: #67e8f9;
+  --color-accent-deep: #0e7490;
 
-  /* trust states (dark-theme text-safe values) */
+  /* ----- trust states ----- */
   --color-trust: #4ade80;
   --color-untrust: #f87171;
   --color-unknown: #94a3b8;
@@ -31,55 +37,198 @@
   --color-recovering: #60a5fa;
   --color-recertified: #2dd4bf;
 
+  /* ----- type families ----- */
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
+  /* ----- editorial type scale (fluid) ----- */
+  --text-display-xl: clamp(2.75rem, 8.5vw, 6.5rem);
+  --text-display-xl--line-height: 0.98;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-lg: clamp(2.25rem, 6vw, 4.5rem);
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.025em;
+  --text-display-md: clamp(1.75rem, 3.6vw, 2.75rem);
+  --text-display-md--line-height: 1.1;
+  --text-display-md--letter-spacing: -0.02em;
+
+  /* ----- spacing scale ----- */
+  --spacing-4_5: 1.125rem;
+  --spacing-section: clamp(4rem, 9vw, 8.5rem);
+
+  /* ----- radii ----- */
   --radius-card: 10px;
+
+  /* ----- motion tokens ----- */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 650ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* The console is dark-first by design (security-product convention);
-   light-theme tokens are defined in the design system for a future toggle. */
+/* ----- paper theme (fully designed, not inverted) ----- */
+[data-theme="paper"] {
+  --color-canvas: #f4f2ec;
+  --color-canvas-2: #ece9e0;
+  --color-surface: #fbfaf6;
+  --color-surface-2: #efede5;
+  --color-hairline: #d8d4c6;
+  --color-hairline-strong: #c2bdac;
+  --color-ink: #171a14;
+  --color-ink-dim: #4d5245;
+  --color-ink-faint: #82876f;
+  --color-accent: #0e7490;
+  --color-accent-strong: #155e75;
+  --color-accent-deep: #155e75;
+  --color-trust: #15803d;
+  --color-untrust: #b91c1c;
+  --color-unknown: #52606d;
+  --color-degraded: #a16207;
+  --color-compromised: #9f1239;
+  --color-quarantined: #c2410c;
+  --color-recovering: #1d4ed8;
+  --color-recertified: #0f766e;
+}
+
 html {
   color-scheme: dark;
+}
+[data-theme="paper"] {
+  color-scheme: light;
 }
 
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out);
 }
 
-/* blueprint dot-grid canvas for graph areas */
-.dotgrid {
-  background-image: radial-gradient(var(--color-hairline) 1px, transparent 1px);
-  background-size: 22px 22px;
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
 }
 
-/* mono is the "evidence voice" of the product */
+/* ----- editorial primitives ----- */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-display-xl);
+  line-height: var(--text-display-xl--line-height);
+  letter-spacing: var(--text-display-xl--letter-spacing);
+}
+.display-lg {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-display-lg);
+  line-height: var(--text-display-lg--line-height);
+  letter-spacing: var(--text-display-lg--letter-spacing);
+}
+.display-md {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-display-md);
+  line-height: var(--text-display-md--line-height);
+  letter-spacing: var(--text-display-md--letter-spacing);
+}
+
 .mono {
   font-family: var(--font-mono);
   font-variant-ligatures: none;
 }
 
-/* micro-labels */
 .microlabel {
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-ink-faint);
-  font-weight: 600;
+  font-weight: 500;
 }
 
-/* focus rings (a11y) */
+/* section index — editorial numbering, e.g. "01" */
+.section-index {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-accent);
+  letter-spacing: 0.08em;
+}
+
+/* hairline rules that structure editorial sections */
+.rule-t {
+  border-top: 1px solid var(--color-hairline);
+}
+.rule-b {
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+/* blueprint dot-grid canvas */
+.dotgrid {
+  background-image: radial-gradient(var(--color-hairline) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ledger row hover sweep */
+.ledger-row {
+  transition: background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+.ledger-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+}
+
+/* nav underline reveal */
+.navlink {
+  position: relative;
+}
+.navlink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+.navlink:hover::after,
+.navlink[aria-current="page"]::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ----- scroll reveal (disabled under reduced motion) ----- */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ----- focus rings ----- */
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* reduced motion */
+/* ----- reduced motion: everything static, everything usable ----- */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -88,9 +237,13 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-/* deviation edge marching ants (static under reduced motion above) */
+/* ----- signature motion: deviation marching ants ----- */
 @keyframes marching-ants {
   to {
     stroke-dashoffset: -12;
@@ -100,11 +253,34 @@ body {
   animation: marching-ants 1.2s linear infinite;
 }
 
-/* trust-state pulse for the provenance rail */
 @keyframes state-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
 .state-pulse {
   animation: state-pulse 2.4s ease-in-out infinite;
+}
+
+/* ledger ticker: trust states drift past like entries being written */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ticker-track {
+  animation: ticker 36s linear infinite;
+}
+
+/* certificate stamp */
+@keyframes stamp-in {
+  0% { opacity: 0; transform: scale(1.6) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.96) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+.stamp {
+  animation: stamp-in 0.5s var(--ease-out) both;
+}
+
+/* tables */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }
